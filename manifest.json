@@ -1,0 +1,96 @@
+{
+  "Actions": [
+    {
+      "Icon": "earthIcon", 
+      "Name": "Earth Cycle", 
+      "States": [
+        {
+          "Image": "icons/earthDayIcon",
+          "FontSize": "10"
+        },
+        {
+          "Image": "icons/earthNightIcon",
+          "FontSize": "10"
+        }
+      ], 
+      "SupportedInMultiActions": false,
+      "Tooltip": "Earth day/night cycle timer.", 
+      "UUID": "com.sauravisus.warframetracker.earthcycle"
+    },
+    {
+      "Icon": "grineerIcon", 
+      "Name": "Cetus Cycle", 
+      "States": [
+        {
+          "Image": "icons/cetusDayIcon",
+          "FontSize": "10"
+        },
+        {
+          "Image": "icons/cetusNightIcon",
+          "FontSize": "10"
+        }
+      ], 
+      "SupportedInMultiActions": false,
+      "Tooltip": "Plains of Eidolon day/night cycle timer.", 
+      "UUID": "com.sauravisus.warframetracker.cetuscycle"
+    },
+	{
+      "Icon": "corpusIcon", 
+      "Name": "Fortuna Cycle", 
+      "States": [
+        {
+          "Image": "icons/fortunaDayIcon",
+          "FontSize": "10"
+        },
+        {
+          "Image": "icons/fortunaNightIcon",
+          "FontSize": "10"
+        }
+      ], 
+      "SupportedInMultiActions": false,
+      "Tooltip": "Orb Vallis warm/cold cycle timer.", 
+      "UUID": "com.sauravisus.warframetracker.fortunacycle"
+    },
+	{
+      "Icon": "infestedIcon", 
+      "Name": "Deimos Cycle", 
+      "States": [
+        {
+          "Image": "icons/deimosDayIcon",
+          "FontSize": "10"
+        },
+        {
+          "Image": "icons/deimosNightIcon",
+          "FontSize": "10"
+        }
+      ], 
+      "SupportedInMultiActions": false,
+      "Tooltip": "Cambion Drift Vome/Fass cycle timer.", 
+      "UUID": "com.sauravisus.warframetracker.deimoscycle"
+    }
+  ], 
+  "SDKVersion": 2,
+  "Author": "Sauravisus", 
+  "CodePath": "code.html", 
+  "Description": "Keep track of when the various open world areas in Warframe have their day/night cycle.", 
+  "Name": "Warframe Cycle Tracker", 
+  "Category" : "Warframe",
+  "CategoryIcon": "categoryIcon",
+  "Icon": "pluginIcon", 
+  "URL": "https://www.code-vision.org/warframe/cycle-tracker", 
+  "Version": "1.0",
+  "OS": [
+    {
+        "Platform": "mac", 
+        "MinimumVersion" : "10.11"
+    },
+    {
+        "Platform": "windows", 
+        "MinimumVersion" : "10"
+    }
+  ],
+  "Software": 
+    {
+        "MinimumVersion" : "4.1"
+    }
+}

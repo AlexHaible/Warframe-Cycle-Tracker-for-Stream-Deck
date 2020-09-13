@@ -1,0 +1,293 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>com.sauravisus.warframetracker</title>
+    <meta charset="utf-8" />
+</head>
+<body>
+	<script src="js/base.js"></script>
+    <script>
+		var websocket = null;
+    	var pluginUUID = null;
+		var apiData = 0;
+    	var DestinationEnum = Object.freeze({"HARDWARE_AND_SOFTWARE":0, "HARDWARE_ONLY":1, "SOFTWARE_ONLY":2});
+		var buttonContexts = {
+			earth : {},
+			cetus : {},
+			fortuna : {},
+			deimos : {},
+		};
+		var lastPulled = 0;
+		
+		function getApiData() {
+			return fetch('https://api.warframestat.us/pc');
+		}
+		
+		function cachedApiData() {
+			if(lastPulled > Date.now()-7000){
+				return apiData;
+			}
+			
+			getApiData()
+			.then((resp) => resp.json())
+			.then(function(data){apiData = data; lastPulled = Date.now();});
+		}
+
+		$SD.on('connected', conn => connected(conn));
+
+		function connected (jsn) {
+			debugLog('Connected Plugin:', jsn);
+
+			$SD.on('com.sauravisus.warframetracker.cetuscycle.willAppear', jsonObj =>
+				action.onWillAppear(jsonObj)
+			);
+			$SD.on('com.sauravisus.warframetracker.fortunacycle.willAppear', jsonObj =>
+				action.onWillAppear(jsonObj)
+			);
+			$SD.on('com.sauravisus.warframetracker.deimoscycle.willAppear', jsonObj =>
+				action.onWillAppear(jsonObj)
+			);
+		}
+
+		function handleEarthCycle(context){
+			var timeWithoutSecondsArray = apiData.earthCycle.timeLeft.split(' ');
+			var timeWithoutSecondsString = timeWithoutSecondsArray[0]+' '+timeWithoutSecondsArray[1];
+			earthCycleAction.SetTitle(context, timeWithoutSecondsString);
+			if(apiData.earthCycle.isDay === true){
+				earthCycleAction.SetState(context, 0);
+			} else {
+				earthCycleAction.SetState(context, 1);
+			}
+		}
+
+		function handleCetusCycle(context){
+			var timeWithoutSecondsArray = apiData.cetusCycle.timeLeft.split(' ');
+			var timeWithoutSecondsString = timeWithoutSecondsArray[0]+' '+timeWithoutSecondsArray[1];
+			cetusCycleAction.SetTitle(context, timeWithoutSecondsString);
+			if(apiData.cetusCycle.isDay === true){
+				cetusCycleAction.SetState(context, 0);
+			} else {
+				cetusCycleAction.SetState(context, 1);
+			}
+		}
+
+		function handleFortunaCycle(context){
+			var timeWithoutSecondsArray = apiData.vallisCycle.timeLeft.split(' ');
+			var timeWithoutSecondsString = timeWithoutSecondsArray[0]+' '+timeWithoutSecondsArray[1];
+			earthCycleAction.SetTitle(context, timeWithoutSecondsString);
+			if(apiData.vallisCycle.isWarm === true){
+				fortunaCycleAction.SetState(context, 0);
+			} else {
+				fortunaCycleAction.SetState(context, 1);
+			}
+		}
+
+		function handleDeimosCycle(context){
+			var timeWithoutSecondsArray = apiData.cetusCycle.timeLeft.split(' ');
+			var timeWithoutSecondsString = timeWithoutSecondsArray[0]+' '+timeWithoutSecondsArray[1];
+			earthCycleAction.SetTitle(context, timeWithoutSecondsString);
+			if(apiData.cambionCycle.active === "fass"){
+				deimosCycleAction.SetState(context, 0);
+			} else {
+				deimosCycleAction.SetState(context, 1);
+			}
+		}
+		
+		var earthCycleAction = {
+			type : "com.sauravisus.warframetracker.earthcycle",
+			cache: {},
+			
+			onWillAppear : function(context, settings, coordinates) {
+				handleEarthCycle(context);
+			},
+			SetTitle : function(context, timeRemaining) {
+				var json = {
+					"event": "setTitle",
+					"context": context,
+					"payload": {
+						"title": timeRemaining,
+						"target": DestinationEnum.HARDWARE_AND_SOFTWARE
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			},
+			SetState : function (context, state) {
+				var json = {
+					"event": "setState",
+					"context": context,
+					"payload": {
+						"state": state,
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			}
+		};
+		
+		var cetusCycleAction = {
+			type : "com.sauravisus.warframetracker.cetuscycle",
+			cache: {},
+			
+			onWillAppear : function(context, settings, coordinates) {
+				handleCetusCycle(context);
+			},
+			SetTitle : function(context, timeRemaining) {
+				var json = {
+					"event": "setTitle",
+					"context": context,
+					"payload": {
+						"title": timeRemaining,
+						"target": DestinationEnum.HARDWARE_AND_SOFTWARE
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			},
+			SetState : function (context, state) {
+				var json = {
+					"event": "setState",
+					"context": context,
+					"payload": {
+						"state": state,
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			}
+		};
+		
+		var fortunaCycleAction = {
+			type : "com.sauravisus.warframetracker.fortunacycle",
+			cache: {},
+			
+			onWillAppear : function(context, settings, coordinates) {
+				handleFortunaCycle(context);
+			},
+			SetTitle : function(context, timeRemaining) {
+				var json = {
+					"event": "setTitle",
+					"context": context,
+					"payload": {
+						"title": timeRemaining,
+						"target": DestinationEnum.HARDWARE_AND_SOFTWARE
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			},
+			SetState : function (context, state) {
+				var json = {
+					"event": "setState",
+					"context": context,
+					"payload": {
+						"state": state,
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			}
+		};
+		
+		var deimosCycleAction = {
+			type : "com.sauravisus.warframetracker.deimoscycle",
+			cache: {},
+			
+			onWillAppear : function(context, settings, coordinates) {
+				handleDeimosCycle(context);
+			},
+			SetTitle : function(context, timeRemaining) {
+				var json = {
+					"event": "setTitle",
+					"context": context,
+					"payload": {
+						"title": timeRemaining,
+						"target": DestinationEnum.HARDWARE_AND_SOFTWARE
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			},
+			SetState : function (context, state) {
+				var json = {
+					"event": "setState",
+					"context": context,
+					"payload": {
+						"state": state,
+					}
+				};
+				websocket.send(JSON.stringify(json));
+			}
+		};
+		
+        function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, inInfo) {
+         	pluginUUID = inPluginUUID
+			websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+			
+			function registerPlugin(inPluginUUID) {
+				var json = {
+					"event": inRegisterEvent,
+					"uuid": inPluginUUID
+				};
+
+				websocket.send(JSON.stringify(json));
+			};
+
+			websocket.onopen = function()
+			{
+				registerPlugin(pluginUUID);
+			};
+
+			websocket.onmessage = function (evt)
+			{
+				var jsonObj = JSON.parse(evt.data);
+				var event = jsonObj['event'];
+				var action = jsonObj['action'];
+				var context = jsonObj['context'];
+				
+				if(event == "willAppear")
+				{
+					var jsonPayload = jsonObj['payload'];
+					var settings = jsonPayload['settings'];
+					var coordinates = jsonPayload['coordinates'];
+					
+					switch(jsonObj.action){
+						case 'com.sauravisus.warframetracker.earthcycle':
+							buttonContexts.earth.context = context;
+							buttonContexts.earth.settings = settings;
+							buttonContexts.earth.coordinates = coordinates;
+							earthCycleAction.onWillAppear(context, settings, coordinates);
+							break;
+						case 'com.sauravisus.warframetracker.cetuscycle':
+							buttonContexts.cetus.context = context;
+							buttonContexts.cetus.settings = settings;
+							buttonContexts.cetus.coordinates = coordinates;
+							cetusCycleAction.onWillAppear(context, settings, coordinates);
+							break;
+						case 'com.sauravisus.warframetracker.fortunacycle':
+							buttonContexts.fortuna.context = context;
+							buttonContexts.fortuna.settings = settings;
+							buttonContexts.fortuna.coordinates = coordinates;
+							fortunaCycleAction.onWillAppear(context, settings, coordinates);
+							break;
+						case 'com.sauravisus.warframetracker.deimoscycle':
+							buttonContexts.deimos.context = context;
+							buttonContexts.deimos.settings = settings;
+							buttonContexts.deimos.coordinates = coordinates;
+							deimosCycleAction.onWillAppear(context, settings, coordinates);
+							break;
+					}
+				}
+			};
+
+			websocket.onclose = function() {};
+					
+			setInterval(function(){
+				getApiData()
+				.then((resp) => resp.json())
+				.then(function(data){apiData = data; lastPulled = Date.now();})
+				.then(function(){
+					earthCycleAction.onWillAppear(buttonContexts.earth.context, buttonContexts.earth.settings, buttonContexts.earth.coordinates);
+					cetusCycleAction.onWillAppear(buttonContexts.cetus.context, buttonContexts.cetus.settings, buttonContexts.cetus.coordinates);
+					fortunaCycleAction.onWillAppear(buttonContexts.fortuna.context, buttonContexts.fortuna.settings, buttonContexts.fortuna.coordinates);
+					deimosCycleAction.onWillAppear(buttonContexts.deimos.context, buttonContexts.deimos.settings, buttonContexts.deimos.coordinates);
+					console.log('5 second tick.');
+				});
+			}, 5000);
+        };
+    </script>
+</body>
+</html>
